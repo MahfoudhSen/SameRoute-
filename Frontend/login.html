@@ -260,73 +260,84 @@
 
     <div class="login-card">
       <div class="header">
-        <div class="logo" id="modeIcon">🚙</div>
-        <div class="title">Welcome!</div>
-        <div class="subtitle">Enter your details to continue</div>
-      </div>
-
-      <div class="mode-badge driver" id="modeBadge">
-        <span id="badgeIcon">🚙</span>
-        <span id="badgeText">Driver Mode</span>
+        <div class="logo" id="modeIcon">🚗</div>
+        <div class="title">Welcome Back!</div>
+        <div class="subtitle">Log in to your GreenRoute account</div>
       </div>
 
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" placeholder="Enter your name" required>
+          <label for="username">Username or Email</label>
+          <input type="text" id="username" placeholder="Enter your username or email" required>
         </div>
 
         <div class="form-group">
-          <label for="phone">Phone Number</label>
-          <input type="tel" id="phone" placeholder="+1 (555) 123-4567" required>
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Enter your password" required>
         </div>
 
         <button type="submit" class="submit-btn driver-btn" id="submitBtn">
-          <span id="btnIcon">🚙</span>
-          <span id="btnText">Continue as Driver</span>
+          <span id="btnText">Log In</span>
         </button>
       </form>
 
       <div class="info-pill">
-        💡 Your information will be used to connect you with other users
+        💡 Don't have an account? <a href="signup.html" style="color: #10b981; text-decoration: underline;">Sign up here</a>
       </div>
     </div>
   </div>
 
   <script>
-    // Get mode from URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode') || 'driver';
-
-    // Update UI based on mode
-    if (mode === 'rider') {
-      document.getElementById('modeIcon').textContent = '🙋';
-      document.getElementById('modeBadge').classList.remove('driver');
-      document.getElementById('modeBadge').classList.add('rider');
-      document.getElementById('badgeIcon').textContent = '🙋';
-      document.getElementById('badgeText').textContent = 'Rider Mode';
-      document.getElementById('submitBtn').classList.remove('driver-btn');
-      document.getElementById('submitBtn').classList.add('rider-btn');
-      document.getElementById('btnIcon').textContent = '🙋';
-      document.getElementById('btnText').textContent = 'Continue as Rider';
-    }
-
-    function handleLogin(event) {
+    async function handleLogin(event) {
       event.preventDefault();
 
-      const name = document.getElementById('name').value;
-      const phone = document.getElementById('phone').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const submitBtn = document.getElementById('submitBtn');
+      const originalText = submitBtn.querySelector('#btnText').textContent;
 
-      // Store user info in sessionStorage
-      sessionStorage.setItem('userName', name);
-      sessionStorage.setItem('userPhone', phone);
-      sessionStorage.setItem('userMode', mode);
+      // Show loading state
+      submitBtn.querySelector('#btnText').textContent = 'Logging in...';
+      submitBtn.disabled = true;
 
-      // Redirect to appropriate page
-      if (mode === 'driver') {
-        window.location.href = 'driver.html';
-      } else {
-        window.location.href = 'rider.html';
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/signin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Store user info in localStorage
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data));
+
+          // Store username and create session
+          sessionStorage.setItem('userName', data.firstName + ' ' + data.lastName);
+          sessionStorage.setItem('userPhone', data.email);
+
+          // Show success
+          submitBtn.querySelector('#btnText').textContent = 'Success!';
+
+          // Redirect to mode selection (index.html will show rider/driver choice)
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 500);
+        } else {
+          // Show error
+          alert(data.error || 'Login failed. Please check your credentials.');
+          submitBtn.querySelector('#btnText').textContent = originalText;
+          submitBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed. Please make sure the server is running.');
+        submitBtn.querySelector('#btnText').textContent = originalText;
+        submitBtn.disabled = false;
       }
     }
   </script>

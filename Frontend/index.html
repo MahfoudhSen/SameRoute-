@@ -370,7 +370,7 @@
 
     <div class="cards-container">
       <!-- Driver Card -->
-      <div class="mode-card driver" onclick="window.location.href='login.html?mode=driver'">
+      <div class="mode-card driver" onclick="selectMode('driver')">
         <div class="card-content">
           <span class="mode-icon">🚙</span>
           <h2 class="mode-title">Driver</h2>
@@ -388,7 +388,7 @@
       </div>
 
       <!-- Rider Card -->
-      <div class="mode-card rider" onclick="window.location.href='login.html?mode=rider'">
+      <div class="mode-card rider" onclick="selectMode('rider')">
         <div class="card-content">
           <span class="mode-icon">🙋</span>
           <h2 class="mode-title">Rider</h2>
@@ -412,5 +412,19 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function selectMode(mode) {
+      // Store the selected mode
+      sessionStorage.setItem('userMode', mode);
+
+      // Redirect to the appropriate page
+      if (mode === 'driver') {
+        window.location.href = 'driver.html';
+      } else {
+        window.location.href = 'rider.html';
+      }
+    }
+  </script>
 </body>
 </html>

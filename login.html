@@ -311,8 +311,8 @@
       </div>
 
       <div class="mode-badge driver" id="modeBadge">
-        <span id="badgeIcon">🚙</span>
-        <span id="badgeText">Driver Mode</span>
+        <span id="badgeIcon">🚗</span>
+        <span id="badgeText">GreenRoute</span>
       </div>
 
       <div class="tab-switcher">
@@ -335,8 +335,8 @@
         </div>
 
         <button type="submit" class="submit-btn driver-btn" id="loginBtn">
-          <span id="loginBtnIcon">🚙</span>
-          <span id="loginBtnText">Continue as Driver</span>
+          <span id="loginBtnIcon">🚗</span>
+          <span id="loginBtnText">Continue</span>
         </button>
       </form>
 
@@ -373,7 +373,7 @@
         </div>
 
         <button type="submit" class="submit-btn driver-btn" id="signupBtn">
-          <span id="signupBtnIcon">🚙</span>
+          <span id="signupBtnIcon">🚗</span>
           <span>Create Account</span>
         </button>
       </form>
@@ -385,25 +385,7 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const mode = urlParams.get('mode') || 'driver';
     let currentTab = 'login';
-
-    // Update UI based on mode
-    if (mode === 'rider') {
-      document.getElementById('modeIcon').textContent = '🙋';
-      document.getElementById('modeBadge').classList.remove('driver');
-      document.getElementById('modeBadge').classList.add('rider');
-      document.getElementById('badgeIcon').textContent = '🙋';
-      document.getElementById('badgeText').textContent = 'Rider Mode';
-      document.getElementById('loginBtn').classList.remove('driver-btn');
-      document.getElementById('loginBtn').classList.add('rider-btn');
-      document.getElementById('loginBtnIcon').textContent = '🙋';
-      document.getElementById('loginBtnText').textContent = 'Continue as Rider';
-      document.getElementById('signupBtn').classList.remove('driver-btn');
-      document.getElementById('signupBtn').classList.add('rider-btn');
-      document.getElementById('signupBtnIcon').textContent = '🙋';
-    }
 
     function switchTab(tab) {
       currentTab = tab;
@@ -460,15 +442,10 @@
           sessionStorage.setItem('userName', data.firstName + ' ' + data.lastName);
           sessionStorage.setItem('userEmail', data.email);
           sessionStorage.setItem('userPhone', data.username); // Using username as phone for now
-          sessionStorage.setItem('userMode', mode);
           sessionStorage.setItem('token', data.token);
 
-          // Redirect to appropriate page
-          if (mode === 'driver') {
-            window.location.href = 'driver.html';
-          } else {
-            window.location.href = 'rider.html';
-          }
+          // Redirect to mode selection page
+          window.location.href = 'index.html';
         } else {
           showError(data.error || 'Login failed. Please check your credentials.');
         }
@@ -510,15 +487,10 @@
           sessionStorage.setItem('userName', firstName + ' ' + lastName);
           sessionStorage.setItem('userEmail', email);
           sessionStorage.setItem('userPhone', phone);
-          sessionStorage.setItem('userMode', mode);
           sessionStorage.setItem('token', data.token);
 
-          // Redirect to appropriate page
-          if (mode === 'driver') {
-            window.location.href = 'driver.html';
-          } else {
-            window.location.href = 'rider.html';
-          }
+          // Redirect to mode selection page
+          window.location.href = 'index.html';
         } else {
           showError(data.error || 'Signup failed. Please try again.');
         }

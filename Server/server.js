@@ -368,6 +368,7 @@ app.delete('/api/clear', async (req, res) => {
 // Live tracking - In-memory storage for active users
 const liveDrivers = new Map(); // id -> {name, phone, location, radiusKm, lastUpdate}
 const liveRiders = new Map(); // id -> {name, phone, location, lastUpdate}
+const rideRequests = new Map(); // requestId -> {driverId, riderId, status, timestamp}
 
 // POST endpoint - Register live driver
 app.post('/api/live-driver', (req, res) => {
@@ -530,6 +531,98 @@ app.get('/api/live-riders', (req, res) => {
   res.json({ riders, total: riders.length });
 });
 
+// ============ RIDE REQUEST ENDPOINTS ============
+
+// POST endpoint - Send ride request from driver to rider
+app.post('/api/ride-request', (req, res) => {
+  const { driverId, riderId } = req.body;
+
+  if (!driverId || !riderId) {
+    return res.status(400).json({ error: 'Missing driverId or riderId' });
+  }
+
+  const driver = liveDrivers.get(driverId);
+  const rider = liveRiders.get(riderId);
+
+  if (!driver) {
+    return res.status(404).json({ error: 'Driver not found' });
+  }
+
+  if (!rider) {
+    return res.status(404).json({ error: 'Rider not found' });
+  }
+
+  const requestId = `req_${Date.now()}`;
+  const request = {
+    id: requestId,
+    driverId,
+    riderId,
+    driverName: driver.name,
+    driverPhone: driver.phone,
+    driverLocation: driver.location,
+    riderName: rider.name,
+    riderPhone: rider.phone,
+    riderLocation: rider.location,
+    status: 'pending', // pending, accepted, rejected
+    timestamp: new Date().toISOString()
+  };
+
+  rideRequests.set(requestId, request);
+
+  res.json({ message: 'Request sent successfully', request });
+});
+
+// GET endpoint - Get pending requests for a rider
+app.get('/api/ride-requests/:riderId', (req, res) => {
+  const { riderId } = req.params;
+
+  const requests = Array.from(rideRequests.values())
+    .filter(req => req.riderId === riderId && req.status === 'pending')
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  res.json({ requests, total: requests.length });
+});
+
+// GET endpoint - Get request status for driver
+app.get('/api/ride-request-status/:driverId', (req, res) => {
+  const { driverId } = req.params;
+
+  const requests = Array.from(rideRequests.values())
+    .filter(req => req.driverId === driverId)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  res.json({ requests, total: requests.length });
+});
+
+// POST endpoint - Accept or reject ride request
+app.post('/api/ride-request/respond', (req, res) => {
+  const { requestId, status } = req.body; // status: 'accepted' or 'rejected'
+
+  if (!requestId || !status) {
+    return res.status(400).json({ error: 'Missing requestId or status' });
+  }
+
+  if (status !== 'accepted' && status !== 'rejected') {
+    return res.status(400).json({ error: 'Invalid status. Must be "accepted" or "rejected"' });
+  }
+
+  const request = rideRequests.get(requestId);
+
+  if (!request) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+
+  if (request.status !== 'pending') {
+    return res.status(400).json({ error: 'Request already responded to' });
+  }
+
+  request.status = status;
+  request.respondedAt = new Date().toISOString();
+  rideRequests.set(requestId, request);
+
+  res.json({ message: `Request ${status} successfully`, request });
+});
+
 // Cleanup inactive users every 5 minutes
 setInterval(() => {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -545,6 +638,15 @@ setInterval(() => {
     if (new Date(rider.lastUpdate) < fiveMinutesAgo) {
       liveRiders.delete(id);
       console.log(`Removed inactive rider: ${rider.name}`);
+    }
+  }
+
+  // Cleanup old requests (older than 30 minutes)
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+  for (const [id, request] of rideRequests.entries()) {
+    if (new Date(request.timestamp) < thirtyMinutesAgo) {
+      rideRequests.delete(id);
+      console.log(`Removed old request: ${id}`);
     }
   }
 }, 5 * 60 * 1000);

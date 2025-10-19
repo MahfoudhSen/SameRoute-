@@ -587,7 +587,7 @@
 
     function handleMapClick(e) {
       if (!pickingMode) {
-        alert('Please click on a pickup or destination field first!');
+        // Simply ignore clicks when no field is selected - smooth UX
         return;
       }
 
@@ -678,7 +678,7 @@
         radius,
         color: '#10b981',
         fillColor: '#10b981',
-        fillOpacity: 0.1,
+        fillOpacity: 0.25,
         weight: 2,
         dashArray: '10, 10'
       }).addTo(map);

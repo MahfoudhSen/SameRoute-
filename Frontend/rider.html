@@ -534,7 +534,7 @@
 
     function handleMapClick(e) {
       if (!pickingMode) {
-        alert('Please click on a pickup or destination field first!');
+        // Simply ignore clicks when no field is selected - smooth UX
         return;
       }
 

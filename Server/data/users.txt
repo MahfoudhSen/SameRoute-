@@ -1,2 +1,3 @@
 {"id":"1760854958730","username":"testuser123","email":"test123@example.com","password":"test123","firstName":"Test","lastName":"User","createdAt":"2025-10-19T06:22:38.730Z"}
 {"id":"1760854996700","username":"Mahfoudh","email":"mahfoudhsenhoury@gmail.com","password":"Mahfoudh23456","firstName":"Mahfoudh","lastName":"Senhoury","createdAt":"2025-10-19T06:23:16.700Z"}
+{"id":"1760872311401","username":"JordanJ","email":"JoshJ@gmail.com","password":"JJJ1234567","firstName":"Jordan","lastName":"Josh","createdAt":"2025-10-19T11:11:51.401Z"}

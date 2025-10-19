@@ -442,6 +442,63 @@
       line-height: 1.5;
     }
 
+    .request-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .request-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .request-btn:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .request-status {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .request-status.pending {
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #f97316;
+    }
+
+    .request-status.accepted {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+    }
+
+    .request-status.rejected {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
     @media (max-width: 768px) {
       .control-panel {
         width: calc(100% - 40px);
@@ -549,8 +606,10 @@
     let pickingMode = null;
     let matchMarkers = [];
     let updateInterval = null;
+    let requestCheckInterval = null;
     let userName = '';
     let userPhone = '';
+    let sentRequests = new Map(); // riderId -> requestId
 
     window.onload = function() {
       // Check if user is logged in
@@ -747,6 +806,8 @@
     function startTracking() {
       findMatches();
       updateInterval = setInterval(findMatches, 5000);
+      checkRequestStatus();
+      requestCheckInterval = setInterval(checkRequestStatus, 3000);
     }
 
     async function findMatches() {
@@ -788,16 +849,32 @@
 
         matchMarkers.push(marker);
 
+        const requestStatus = sentRequests.get(rider.id);
+        let requestButton = '';
+
+        if (!requestStatus) {
+          requestButton = `<button class="request-btn" onclick="sendRideRequest('${rider.id}', event)">
+            <span>🚗</span> Send Request
+          </button>`;
+        } else if (requestStatus.status === 'pending') {
+          requestButton = `<div class="request-status pending">⏳ Waiting for response...</div>`;
+        } else if (requestStatus.status === 'accepted') {
+          requestButton = `<div class="request-status accepted">✅ Request Accepted!</div>`;
+        } else if (requestStatus.status === 'rejected') {
+          requestButton = `<div class="request-status rejected">❌ Request Declined</div>`;
+        }
+
         return `
-          <div class="match-card" onclick="map.setView([${rider.location.lat}, ${rider.location.lng}], 15)">
-            <div class="match-header">
+          <div class="match-card">
+            <div class="match-header" onclick="map.setView([${rider.location.lat}, ${rider.location.lng}], 15)">
               <div class="match-name">${i + 1}. ${rider.name}</div>
               <div class="match-badge">${match.distance} km</div>
             </div>
-            <div class="match-info">
+            <div class="match-info" onclick="map.setView([${rider.location.lat}, ${rider.location.lng}], 15)">
               <div>📞 ${rider.phone}</div>
               <div>📍 ${rider.location.address}</div>
             </div>
+            ${requestButton}
           </div>
         `;
       }).join('');
@@ -816,7 +893,68 @@
       `;
     }
 
+    async function sendRideRequest(riderId, event) {
+      event.stopPropagation();
+
+      try {
+        const res = await fetch('http://localhost:3000/api/ride-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            driverId: userId,
+            riderId: riderId
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          sentRequests.set(riderId, { id: data.request.id, status: 'pending' });
+          findMatches(); // Refresh the display
+        } else {
+          alert('Failed to send request: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error sending request:', error);
+        alert('Failed to send request. Please try again.');
+      }
+    }
+
+    async function checkRequestStatus() {
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/ride-request-status/${userId}`);
+        const data = await res.json();
+
+        if (res.ok && data.requests) {
+          // Update sentRequests map with latest status
+          data.requests.forEach(req => {
+            const existingReq = sentRequests.get(req.riderId);
+            if (existingReq && existingReq.status !== req.status) {
+              sentRequests.set(req.riderId, { id: req.id, status: req.status });
+
+              // Show notification for status change
+              if (req.status === 'accepted') {
+                showStatus(`✅ ${req.riderName} accepted your request!`);
+              } else if (req.status === 'rejected') {
+                showStatus(`❌ ${req.riderName} declined your request`);
+              }
+
+              findMatches(); // Refresh display
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error checking request status:', error);
+      }
+    }
+
     function logout() {
+      // Clear intervals
+      if (updateInterval) clearInterval(updateInterval);
+      if (requestCheckInterval) clearInterval(requestCheckInterval);
+
       // Clear session storage
       sessionStorage.clear();
 

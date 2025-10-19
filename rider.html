@@ -442,6 +442,96 @@
       line-height: 1.5;
     }
 
+    .request-notification {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      width: 380px;
+      background: rgba(30, 41, 59, 0.98);
+      backdrop-filter: blur(20px);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(420px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .request-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--accent);
+    }
+
+    .request-content {
+      background: rgba(148, 163, 184, 0.05);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .request-info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.9375rem;
+    }
+
+    .request-info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .request-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .accept-btn, .reject-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .accept-btn {
+      background: #10b981;
+      color: white;
+    }
+
+    .accept-btn:hover {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+
+    .reject-btn {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .reject-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      transform: translateY(-2px);
+    }
+
     @media (max-width: 768px) {
       .control-panel {
         width: calc(100% - 40px);
@@ -460,6 +550,9 @@
 </head>
 <body>
   <div id="map"></div>
+
+  <!-- Request Notification -->
+  <div id="requestNotification" style="display: none;"></div>
 
   <div class="top-nav">
     <a href="landing.html" class="nav-btn">
@@ -541,8 +634,10 @@
     let pickingMode = null;
     let matchMarkers = [];
     let updateInterval = null;
+    let requestCheckInterval = null;
     let userName = '';
     let userPhone = '';
+    let currentRequestId = null;
 
     window.onload = function() {
       // Check if user is logged in
@@ -711,6 +806,8 @@
     function startTracking() {
       findMatches();
       updateInterval = setInterval(findMatches, 5000);
+      checkForRequests();
+      requestCheckInterval = setInterval(checkForRequests, 3000);
     }
 
     async function findMatches() {
@@ -778,7 +875,102 @@
       `;
     }
 
+    async function checkForRequests() {
+      if (!userId) return;
+
+      try {
+        const res = await fetch(`http://localhost:3000/api/ride-requests/${userId}`);
+        const data = await res.json();
+
+        if (res.ok && data.requests && data.requests.length > 0) {
+          // Show the first pending request
+          const request = data.requests[0];
+          if (!currentRequestId || currentRequestId !== request.id) {
+            showRequestNotification(request);
+          }
+        } else {
+          // Hide notification if no requests
+          if (currentRequestId) {
+            document.getElementById('requestNotification').style.display = 'none';
+            currentRequestId = null;
+          }
+        }
+      } catch (error) {
+        console.error('Error checking for requests:', error);
+      }
+    }
+
+    function showRequestNotification(request) {
+      currentRequestId = request.id;
+      const notification = document.getElementById('requestNotification');
+
+      notification.innerHTML = `
+        <div class="request-notification">
+          <div class="request-header">
+            <span>🚗</span>
+            <span>New Ride Request!</span>
+          </div>
+          <div class="request-content">
+            <div class="request-info-item">
+              <strong>👤 Driver:</strong> ${request.driverName}
+            </div>
+            <div class="request-info-item">
+              <strong>📞 Phone:</strong> ${request.driverPhone}
+            </div>
+            <div class="request-info-item">
+              <strong>📍 Location:</strong> ${request.driverLocation.address.substring(0, 50)}...
+            </div>
+          </div>
+          <div class="request-actions">
+            <button class="accept-btn" onclick="respondToRequest('${request.id}', 'accepted')">
+              <span>✅</span> Accept
+            </button>
+            <button class="reject-btn" onclick="respondToRequest('${request.id}', 'rejected')">
+              <span>❌</span> Decline
+            </button>
+          </div>
+        </div>
+      `;
+
+      notification.style.display = 'block';
+    }
+
+    async function respondToRequest(requestId, status) {
+      try {
+        const res = await fetch('http://localhost:3000/api/ride-request/respond', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requestId,
+            status
+          })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          document.getElementById('requestNotification').style.display = 'none';
+          currentRequestId = null;
+
+          if (status === 'accepted') {
+            showStatus(`✅ You accepted the ride request!`);
+          } else {
+            showStatus(`❌ You declined the ride request`);
+          }
+        } else {
+          alert('Failed to respond: ' + (data.error || 'Unknown error'));
+        }
+      } catch (error) {
+        console.error('Error responding to request:', error);
+        alert('Failed to respond. Please try again.');
+      }
+    }
+
     function logout() {
+      // Clear intervals
+      if (updateInterval) clearInterval(updateInterval);
+      if (requestCheckInterval) clearInterval(requestCheckInterval);
+
       // Clear session storage
       sessionStorage.clear();
 
