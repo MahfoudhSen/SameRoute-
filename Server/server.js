@@ -533,23 +533,34 @@ app.get('/api/live-riders', (req, res) => {
 
 // ============ RIDE REQUEST ENDPOINTS ============
 
-// POST endpoint - Send ride request from driver to rider
+// POST endpoint - Send ride request (bidirectional: driver→rider or rider→driver)
 app.post('/api/ride-request', (req, res) => {
-  const { driverId, riderId } = req.body;
+  const { senderId, receiverId, senderType } = req.body; // senderType: 'driver' or 'rider'
 
-  if (!driverId || !riderId) {
-    return res.status(400).json({ error: 'Missing driverId or riderId' });
+  if (!senderId || !receiverId || !senderType) {
+    return res.status(400).json({ error: 'Missing senderId, receiverId, or senderType' });
   }
 
-  const driver = liveDrivers.get(driverId);
-  const rider = liveRiders.get(riderId);
+  let sender, receiver, driverId, riderId;
 
-  if (!driver) {
-    return res.status(404).json({ error: 'Driver not found' });
+  if (senderType === 'driver') {
+    sender = liveDrivers.get(senderId);
+    receiver = liveRiders.get(receiverId);
+    driverId = senderId;
+    riderId = receiverId;
+  } else {
+    sender = liveRiders.get(senderId);
+    receiver = liveDrivers.get(receiverId);
+    riderId = senderId;
+    driverId = receiverId;
   }
 
-  if (!rider) {
-    return res.status(404).json({ error: 'Rider not found' });
+  if (!sender) {
+    return res.status(404).json({ error: `${senderType} not found` });
+  }
+
+  if (!receiver) {
+    return res.status(404).json({ error: `${senderType === 'driver' ? 'Rider' : 'Driver'} not found` });
   }
 
   const requestId = `req_${Date.now()}`;
@@ -557,12 +568,14 @@ app.post('/api/ride-request', (req, res) => {
     id: requestId,
     driverId,
     riderId,
-    driverName: driver.name,
-    driverPhone: driver.phone,
-    driverLocation: driver.location,
-    riderName: rider.name,
-    riderPhone: rider.phone,
-    riderLocation: rider.location,
+    senderId,
+    senderType,
+    driverName: senderType === 'driver' ? sender.name : receiver.name,
+    driverPhone: senderType === 'driver' ? sender.phone : receiver.phone,
+    driverLocation: senderType === 'driver' ? sender.location : receiver.location,
+    riderName: senderType === 'rider' ? sender.name : receiver.name,
+    riderPhone: senderType === 'rider' ? sender.phone : receiver.phone,
+    riderLocation: senderType === 'rider' ? sender.location : receiver.location,
     status: 'pending', // pending, accepted, rejected
     timestamp: new Date().toISOString()
   };
@@ -572,12 +585,20 @@ app.post('/api/ride-request', (req, res) => {
   res.json({ message: 'Request sent successfully', request });
 });
 
-// GET endpoint - Get pending requests for a rider
-app.get('/api/ride-requests/:riderId', (req, res) => {
-  const { riderId } = req.params;
+// GET endpoint - Get pending requests for a user (rider or driver)
+app.get('/api/ride-requests/:userId/:userType', (req, res) => {
+  const { userId, userType } = req.params;
 
   const requests = Array.from(rideRequests.values())
-    .filter(req => req.riderId === riderId && req.status === 'pending')
+    .filter(req => {
+      if (userType === 'rider') {
+        // Get requests sent TO this rider (from drivers)
+        return req.riderId === userId && req.senderType === 'driver' && req.status === 'pending';
+      } else {
+        // Get requests sent TO this driver (from riders)
+        return req.driverId === userId && req.senderType === 'rider' && req.status === 'pending';
+      }
+    })
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   res.json({ requests, total: requests.length });

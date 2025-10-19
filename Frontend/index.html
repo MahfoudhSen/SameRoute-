@@ -8,17 +8,17 @@
 
   <style>
     :root {
-      --bg: #0f172a;
-      --bg-light: #1e293b;
-      --card: #1e293b;
-      --card-hover: #334155;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent: #10b981;
-      --accent-hover: #059669;
-      --accent-2: #3b82f6;
-      --border: rgba(148, 163, 184, 0.1);
-      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+      --bg: #3a6d47;
+      --bg-light: #2f5a3a;
+      --card: #0f1411;
+      --card-hover: #1a2219;
+      --text: #e8f3ec;
+      --text-muted: #9fb3a5;
+      --accent: #2f9e44;
+      --accent-hover: #22c55e;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.08);
+      --shadow: 0 20px 50px rgba(0,0,0,.35);
     }
 
     * {
@@ -41,7 +41,6 @@
       overflow: hidden;
     }
 
-    /* Animated background */
     body::before {
       content: '';
       position: absolute;
@@ -49,10 +48,11 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background:
-        radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-      animation: float 15s ease-in-out infinite;
+      background-image: url('image.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.08;
       z-index: 0;
     }
 
@@ -343,7 +343,6 @@
       }
     }
 
-    /* Pulse animation for icons */
     @keyframes iconPulse {
       0%, 100% {
         transform: scale(1);
@@ -369,7 +368,6 @@
     </div>
 
     <div class="cards-container">
-      <!-- Driver Card -->
       <div class="mode-card driver" onclick="selectMode('driver')">
         <div class="card-content">
           <span class="mode-icon">🚙</span>
@@ -387,7 +385,6 @@
         </div>
       </div>
 
-      <!-- Rider Card -->
       <div class="mode-card rider" onclick="selectMode('rider')">
         <div class="card-content">
           <span class="mode-icon">🙋</span>
@@ -414,6 +411,15 @@
   </div>
 
   <script>
+    // Check if user is logged in
+    window.onload = function() {
+      const token = sessionStorage.getItem('token');
+      if (!token) {
+        // Not logged in, redirect to login
+        window.location.href = 'login.html';
+      }
+    };
+
     function selectMode(mode) {
       // Store the selected mode
       sessionStorage.setItem('userMode', mode);
