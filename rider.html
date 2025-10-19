@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GreenRoute - Driver</title>
+  <title>GreenRoute - Rider</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
@@ -15,8 +15,8 @@
       --card-hover: #334155;
       --text: #f1f5f9;
       --text-muted: #94a3b8;
-      --accent: #10b981;
-      --accent-hover: #059669;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
       --accent-2: #3b82f6;
       --border: rgba(148, 163, 184, 0.1);
       --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
@@ -76,6 +76,17 @@
       background: var(--card-hover);
       border-color: var(--accent);
       transform: translateY(-2px);
+    }
+
+    .nav-btn.logout {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .nav-btn.logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
     }
 
     .control-panel {
@@ -160,8 +171,8 @@
     }
 
     .user-info {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
       border-radius: 10px;
       padding: 12px;
       margin-bottom: 16px;
@@ -344,8 +355,8 @@
     }
 
     .status-card {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.2);
       border-radius: 12px;
       padding: 16px;
       margin-bottom: 16px;
@@ -361,7 +372,7 @@
     .pulse {
       width: 12px;
       height: 12px;
-      background: #10b981;
+      background: #3b82f6;
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
     }
@@ -422,8 +433,8 @@
     }
 
     .info-pill {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
       border-radius: 8px;
       padding: 12px;
       font-size: 0.8125rem;
@@ -451,9 +462,12 @@
   <div id="map"></div>
 
   <div class="top-nav">
-    <a href="index.html" class="nav-btn">
+    <a href="landing.html" class="nav-btn">
       <span>🏠</span> Home
     </a>
+    <button class="nav-btn logout" onclick="logout()">
+      <span>🚪</span> Logout
+    </button>
   </div>
 
   <div class="control-panel">
@@ -461,26 +475,26 @@
       <div class="logo">
         🚗 GreenRoute
       </div>
-      <div class="subtitle">Driver Dashboard</div>
+      <div class="subtitle">Rider Dashboard</div>
     </div>
 
     <div class="mode-badge">
-      <span>🚙</span> Driver Mode
+      <span>👤</span> Rider Mode
     </div>
 
-    <div class="user-info" id="userInfo" style="display: none;">
+    <div class="user-info" id="userInfo">
       <div class="user-info-item">
         <span>👤</span>
-        <strong id="displayName"></strong>
+        <strong id="displayName">Loading...</strong>
       </div>
       <div class="user-info-item">
         <span>📞</span>
-        <span id="displayPhone"></span>
+        <span id="displayPhone">Loading...</span>
       </div>
     </div>
 
-    <!-- Driver Form -->
-    <div id="driverForm">
+    <!-- Rider Form -->
+    <div id="riderForm">
       <div class="section">
         <div class="section-title">Trip Details</div>
 
@@ -491,26 +505,18 @@
         <div class="location-picker">
           <div class="location-input">
             <span class="location-icon">🔵</span>
-            <input type="text" id="driverStart" placeholder="Click map for pickup location..." readonly onclick="setPickingMode('start')">
+            <input type="text" id="riderStart" placeholder="Click map for pickup location..." readonly onclick="setPickingMode('start')">
           </div>
 
           <div class="location-input">
             <span class="location-icon">🎯</span>
-            <input type="text" id="driverEnd" placeholder="Click map for destination..." readonly onclick="setPickingMode('end')">
+            <input type="text" id="riderEnd" placeholder="Click map for destination..." readonly onclick="setPickingMode('end')">
           </div>
-        </div>
-
-        <div class="slider-group">
-          <div class="slider-header">
-            <label>Search Radius</label>
-            <span class="slider-value" id="radiusValue">5 km</span>
-          </div>
-          <input type="range" id="driverRadius" min="0.5" max="50" value="5" step="0.5" oninput="updateRadius(this.value)">
         </div>
       </div>
 
-      <button class="action-btn" onclick="startDriver()">
-        <span>🚙</span> Start Driving
+      <button class="action-btn" onclick="startRider()">
+        <span>👤</span> Find a Ride
       </button>
     </div>
 
@@ -538,20 +544,20 @@
     let userName = '';
     let userPhone = '';
 
-    // Check if user is logged in
     window.onload = function() {
+      // Check if user is logged in
       userName = sessionStorage.getItem('userName');
       userPhone = sessionStorage.getItem('userPhone');
+      const token = sessionStorage.getItem('token');
 
-      if (!userName || !userPhone) {
-        window.location.href = 'login.html?mode=driver';
+      if (!userName || !token) {
+        window.location.href = 'login.html?mode=rider';
         return;
       }
 
       // Display user info
       document.getElementById('displayName').textContent = userName;
       document.getElementById('displayPhone').textContent = userPhone;
-      document.getElementById('userInfo').style.display = 'block';
 
       initMap();
     };
@@ -581,7 +587,7 @@
 
     function setPickingMode(mode) {
       pickingMode = mode;
-      document.getElementById('driver' + (mode === 'start' ? 'Start' : 'End')).placeholder =
+      document.getElementById('rider' + (mode === 'start' ? 'Start' : 'End')).placeholder =
         'Click on the map to select location...';
     }
 
@@ -607,7 +613,7 @@
 
       if (type === 'start') {
         startLocation = location;
-        document.getElementById('driverStart').value = address;
+        document.getElementById('riderStart').value = address;
 
         if (startMarker) map.removeLayer(startMarker);
         startMarker = L.circleMarker([lat, lng], {
@@ -618,11 +624,9 @@
           fillOpacity: 1
         }).addTo(map).bindPopup('📍 Pickup').openPopup();
 
-        updateRadiusCircle();
-
       } else {
         endLocation = location;
-        document.getElementById('driverEnd').value = address;
+        document.getElementById('riderEnd').value = address;
 
         if (endMarker) map.removeLayer(endMarker);
         endMarker = L.circleMarker([lat, lng], {
@@ -661,29 +665,6 @@
       });
     }
 
-    function updateRadius(value) {
-      document.getElementById('radiusValue').textContent = value + ' km';
-      if (startLocation) {
-        updateRadiusCircle();
-      }
-    }
-
-    function updateRadiusCircle() {
-      if (!startLocation) return;
-
-      if (radiusCircle) map.removeLayer(radiusCircle);
-
-      const radius = parseFloat(document.getElementById('driverRadius').value) * 1000;
-      radiusCircle = L.circle([startLocation.lat, startLocation.lng], {
-        radius,
-        color: '#10b981',
-        fillColor: '#10b981',
-        fillOpacity: 0.1,
-        weight: 2,
-        dashArray: '10, 10'
-      }).addTo(map);
-    }
-
     function drawRoute() {
       if (routeLine) map.removeLayer(routeLine);
 
@@ -691,7 +672,7 @@
         [startLocation.lat, startLocation.lng],
         [endLocation.lat, endLocation.lng]
       ], {
-        color: '#10b981',
+        color: '#3b82f6',
         weight: 3,
         opacity: 0.7,
         dashArray: '10, 10'
@@ -700,33 +681,30 @@
       map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
     }
 
-    async function startDriver() {
+    async function startRider() {
       if (!startLocation || !endLocation) {
         alert('Please set both pickup and destination!');
         return;
       }
 
-      const radius = parseFloat(document.getElementById('driverRadius').value);
-
-      const res = await fetch('http://localhost:3000/api/live-driver', {
+      const res = await fetch('http://localhost:3000/api/live-rider', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: userName,
           phone: userPhone,
           location: startLocation,
-          destination: endLocation,
-          radiusKm: radius
+          destination: endLocation
         })
       });
 
       const data = await res.json();
       if (res.ok) {
-        userId = data.driver.id;
-        showStatus(`🚙 You're live! Searching within ${radius}km...`);
+        userId = data.rider.id;
+        showStatus(`👤 Looking for drivers nearby...`);
         startTracking();
       } else {
-        alert('Error starting driver mode: ' + (data.error || 'Unknown error'));
+        alert('Error starting rider mode: ' + (data.error || 'Unknown error'));
       }
     }
 
@@ -736,10 +714,8 @@
     }
 
     async function findMatches() {
-      const radius = parseFloat(document.getElementById('driverRadius').value);
-
       const res = await fetch(
-        `http://localhost:3000/api/live-matches?type=driver&id=${userId}&radius=${radius}`
+        `http://localhost:3000/api/live-matches?type=rider&id=${userId}`
       );
 
       const data = await res.json();
@@ -753,36 +729,36 @@
       const list = document.getElementById('matchList');
 
       if (matches.length === 0) {
-        list.innerHTML = '<div class="info-pill">No riders nearby yet. Keep driving!</div>';
+        list.innerHTML = '<div class="info-pill">No drivers nearby yet. Searching...</div>';
         return;
       }
 
       list.innerHTML = matches.map((match, i) => {
-        const rider = match.rider;
+        const driver = match.driver;
 
-        const marker = L.circleMarker([rider.location.lat, rider.location.lng], {
+        const marker = L.circleMarker([driver.location.lat, driver.location.lng], {
           radius: 10,
-          fillColor: '#f59e0b',
+          fillColor: '#10b981',
           color: '#fff',
           weight: 2,
           fillOpacity: 1
         }).addTo(map).bindPopup(`
-          <strong>${rider.name}</strong><br>
-          📞 ${rider.phone}<br>
+          <strong>${driver.name}</strong><br>
+          📞 ${driver.phone}<br>
           📍 ${match.distance} km away
         `);
 
         matchMarkers.push(marker);
 
         return `
-          <div class="match-card" onclick="map.setView([${rider.location.lat}, ${rider.location.lng}], 15)">
+          <div class="match-card" onclick="map.setView([${driver.location.lat}, ${driver.location.lng}], 15)">
             <div class="match-header">
-              <div class="match-name">${i + 1}. ${rider.name}</div>
+              <div class="match-name">${i + 1}. ${driver.name}</div>
               <div class="match-badge">${match.distance} km</div>
             </div>
             <div class="match-info">
-              <div>📞 ${rider.phone}</div>
-              <div>📍 ${rider.location.address}</div>
+              <div>📞 ${driver.phone}</div>
+              <div>📍 ${driver.location.address}</div>
             </div>
           </div>
         `;
@@ -800,6 +776,14 @@
           <div>${msg}</div>
         </div>
       `;
+    }
+
+    function logout() {
+      // Clear session storage
+      sessionStorage.clear();
+
+      // Redirect to landing page
+      window.location.href = 'landing.html';
     }
   </script>
 </body>

@@ -78,6 +78,17 @@
       transform: translateY(-2px);
     }
 
+    .nav-btn.logout {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+    }
+
+    .nav-btn.logout:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #ef4444;
+    }
+
     .control-panel {
       position: absolute;
       top: 20px;
@@ -451,9 +462,12 @@
   <div id="map"></div>
 
   <div class="top-nav">
-    <a href="index.html" class="nav-btn">
+    <a href="landing.html" class="nav-btn">
       <span>🏠</span> Home
     </a>
+    <button class="nav-btn logout" onclick="logout()">
+      <span>🚪</span> Logout
+    </button>
   </div>
 
   <div class="control-panel">
@@ -468,14 +482,14 @@
       <span>🚙</span> Driver Mode
     </div>
 
-    <div class="user-info" id="userInfo" style="display: none;">
+    <div class="user-info" id="userInfo">
       <div class="user-info-item">
         <span>👤</span>
-        <strong id="displayName"></strong>
+        <strong id="displayName">Loading...</strong>
       </div>
       <div class="user-info-item">
         <span>📞</span>
-        <span id="displayPhone"></span>
+        <span id="displayPhone">Loading...</span>
       </div>
     </div>
 
@@ -538,12 +552,13 @@
     let userName = '';
     let userPhone = '';
 
-    // Check if user is logged in
     window.onload = function() {
+      // Check if user is logged in
       userName = sessionStorage.getItem('userName');
       userPhone = sessionStorage.getItem('userPhone');
+      const token = sessionStorage.getItem('token');
 
-      if (!userName || !userPhone) {
+      if (!userName || !token) {
         window.location.href = 'login.html?mode=driver';
         return;
       }
@@ -551,7 +566,6 @@
       // Display user info
       document.getElementById('displayName').textContent = userName;
       document.getElementById('displayPhone').textContent = userPhone;
-      document.getElementById('userInfo').style.display = 'block';
 
       initMap();
     };
@@ -800,6 +814,14 @@
           <div>${msg}</div>
         </div>
       `;
+    }
+
+    function logout() {
+      // Clear session storage
+      sessionStorage.clear();
+
+      // Redirect to landing page
+      window.location.href = 'landing.html';
     }
   </script>
 </body>

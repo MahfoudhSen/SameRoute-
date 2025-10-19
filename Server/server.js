@@ -7,8 +7,13 @@ const path = require('path');
 const app = express();
 const PORT = 3000;
 
-// Middleware
-app.use(cors());
+// Middleware - Allow all origins including file://
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: false
+}));
 app.use(bodyParser.json());
 
 // File paths

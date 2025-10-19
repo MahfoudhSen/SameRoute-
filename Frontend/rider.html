@@ -46,6 +46,38 @@
       z-index: 0;
     }
 
+    .top-nav {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1001;
+      display: flex;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: rgba(30, 41, 59, 0.95);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .nav-btn:hover {
+      background: var(--card-hover);
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
     .control-panel {
       position: absolute;
       top: 20px;
@@ -125,6 +157,27 @@
       letter-spacing: 0.5px;
       color: var(--text-muted);
       margin-bottom: 12px;
+    }
+
+    .user-info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .user-info-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-size: 0.9375rem;
+      margin-bottom: 6px;
+    }
+
+    .user-info-item:last-child {
+      margin-bottom: 0;
     }
 
     .input-group {
@@ -338,11 +391,25 @@
         width: calc(100% - 40px);
         max-height: 60vh;
       }
+
+      .top-nav {
+        top: auto;
+        bottom: 20px;
+        right: 20px;
+        left: 20px;
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
+
+  <div class="top-nav">
+    <a href="index.html" class="nav-btn">
+      <span>🏠</span> Home
+    </a>
+  </div>
 
   <div class="control-panel">
     <div class="header">
@@ -356,22 +423,19 @@
       <span>🙋</span> Rider Mode
     </div>
 
+    <div class="user-info" id="userInfo" style="display: none;">
+      <div class="user-info-item">
+        <span>👤</span>
+        <strong id="displayName"></strong>
+      </div>
+      <div class="user-info-item">
+        <span>📞</span>
+        <span id="displayPhone"></span>
+      </div>
+    </div>
+
     <!-- Rider Form -->
     <div id="riderForm">
-      <div class="section">
-        <div class="section-title">Your Information</div>
-
-        <div class="input-group">
-          <label>Name</label>
-          <input type="text" id="riderName" placeholder="Enter your name" value="Sam Rider">
-        </div>
-
-        <div class="input-group">
-          <label>Phone</label>
-          <input type="tel" id="riderPhone" placeholder="+1 (555) 987-6543" value="+1-555-5678">
-        </div>
-      </div>
-
       <div class="section">
         <div class="section-title">Trip Details</div>
 
@@ -415,11 +479,30 @@
     let map, userId = null;
     let startLocation = null, endLocation = null;
     let startMarker = null, endMarker = null, routeLine = null;
-    let pickingMode = null; // 'start' or 'end'
+    let pickingMode = null;
     let matchMarkers = [];
     let updateInterval = null;
+    let userName = '';
+    let userPhone = '';
 
-    // Initialize smooth map
+    // Check if user is logged in
+    window.onload = function() {
+      userName = sessionStorage.getItem('userName');
+      userPhone = sessionStorage.getItem('userPhone');
+
+      if (!userName || !userPhone) {
+        window.location.href = 'login.html?mode=rider';
+        return;
+      }
+
+      // Display user info
+      document.getElementById('displayName').textContent = userName;
+      document.getElementById('displayPhone').textContent = userPhone;
+      document.getElementById('userInfo').style.display = 'block';
+
+      initMap();
+    };
+
     function initMap() {
       map = L.map('map', {
         zoomControl: false,
@@ -436,7 +519,6 @@
 
       map.on('click', handleMapClick);
 
-      // Try to get user location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
           map.setView([pos.coords.latitude, pos.coords.longitude], 14);
@@ -546,14 +628,12 @@
         return;
       }
 
-      const name = document.getElementById('riderName').value;
-      const phone = document.getElementById('riderPhone').value;
-
       const res = await fetch('http://localhost:3000/api/live-rider', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name, phone,
+          name: userName,
+          phone: userPhone,
           location: startLocation,
           destination: endLocation
         })
@@ -638,8 +718,6 @@
         </div>
       `;
     }
-
-    window.onload = initMap;
   </script>
 </body>
 </html>
