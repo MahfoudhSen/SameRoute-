@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Driver</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* Keep all your CSS from the original file here, no changes needed */
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="control-panel">
+    <div class="header">
+      <div class="logo">🚗 GreenRoute</div>
+      <div class="subtitle">Live ride sharing for drivers</div>
+    </div>
+
+    <!-- Driver Form -->
+    <div id="driverForm">
+      <div class="section">
+        <div class="section-title">Your Information</div>
+        <div class="input-group">
+          <label>Name</label>
+          <input type="text" id="driverName" placeholder="Enter your name" value="Alex Driver">
+        </div>
+        <div class="input-group">
+          <label>Phone</label>
+          <input type="tel" id="driverPhone" placeholder="+1 (555) 123-4567" value="+1-555-1234">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Trip Details</div>
+        <button class="gps-btn" onclick="useMyLocation()">📍 Use My Current Location</button>
+
+        <div class="location-picker">
+          <div class="location-input">
+            <span class="location-icon">🔵</span>
+            <input type="text" id="driverStart" placeholder="Click map for pickup location..." readonly onclick="setPickingMode('start')">
+          </div>
+
+          <div class="location-input">
+            <span class="location-icon">🎯</span>
+            <input type="text" id="driverEnd" placeholder="Click map for destination..." readonly onclick="setPickingMode('end')">
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <label>Search Radius</label>
+            <span class="slider-value" id="radiusValue">5 km</span>
+          </div>
+          <input type="range" id="driverRadius" min="0.5" max="50" value="5" step="0.5" oninput="updateRadius(this.value)">
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="startDriver()">🚙 Start Driving</button>
+    </div>
+
+    <!-- Status -->
+    <div id="statusCard" style="display: none;"></div>
+    <div id="matchList"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Copy all your JS from original file
+    // Remove rider logic (riderForm, startRider(), etc.)
+    // Keep driver-related logic only
+    // Keep initMap(), setPickingMode(), handleMapClick(), drawRoute(), startDriver(), etc.
+  </script>
+</body>
+</html>

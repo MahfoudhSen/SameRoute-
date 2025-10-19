@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Rider</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    /* Same CSS as driver.html */
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="control-panel">
+    <div class="header">
+      <div class="logo">🚗 GreenRoute</div>
+      <div class="subtitle">Live ride sharing for riders</div>
+    </div>
+
+    <!-- Rider Form -->
+    <div id="riderForm">
+      <div class="section">
+        <div class="section-title">Your Information</div>
+        <div class="input-group">
+          <label>Name</label>
+          <input type="text" id="riderName" placeholder="Enter your name" value="Sam Rider">
+        </div>
+        <div class="input-group">
+          <label>Phone</label>
+          <input type="tel" id="riderPhone" placeholder="+1 (555) 987-6543" value="+1-555-5678">
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Trip Details</div>
+        <button class="gps-btn" onclick="useMyLocation()">📍 Use My Current Location</button>
+
+        <div class="location-picker">
+          <div class="location-input">
+            <span class="location-icon">🔵</span>
+            <input type="text" id="riderStart" placeholder="Click map for pickup location..." readonly onclick="setPickingMode('start')">
+          </div>
+
+          <div class="location-input">
+            <span class="location-icon">🎯</span>
+            <input type="text" id="riderEnd" placeholder="Click map for destination..." readonly onclick="setPickingMode('end')">
+          </div>
+        </div>
+      </div>
+
+      <button class="action-btn" onclick="startRider()">🙋 Request Ride</button>
+    </div>
+
+    <!-- Status -->
+    <div id="statusCard" style="display: none;"></div>
+    <div id="matchList"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Copy all JS from original file
+    // Remove driver logic (driverForm, startDriver(), radius, etc.)
+    // Keep rider-related logic only
+    // Keep initMap(), setPickingMode(), handleMapClick(), drawRoute(), startRider(), etc.
+  </script>
+</body>
+</html>
