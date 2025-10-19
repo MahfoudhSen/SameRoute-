@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setting API Key...</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1a1a1a;
+            color: #e8f3ec;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 500px;
+            padding: 40px;
+            background: #242424;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: #a3e635;
+            margin-bottom: 20px;
+        }
+        .success {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        a {
+            display: inline-block;
+            background: #2f9e44;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        a:hover {
+            background: #27823a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success">✅</div>
+        <h1>API Key Saved!</h1>
+        <p>Your Google Maps API key has been configured.</p>
+        <p style="margin-top: 20px; color: #9fb3a5; font-size: 0.9rem;">
+            Key: AIzaSyDhsqKqqoNL2t7I...
+        </p>
+        <a href="live-matching.html">Open Live Matching →</a>
+    </div>
+    <script>
+        localStorage.setItem('googleMapsApiKey', 'AIzaSyDhsqKqqoNL2t7IyLoPWl2UsHElwZp6yMk');
+        console.log('API Key saved to localStorage');
+    </script>
+</body>
+</html>

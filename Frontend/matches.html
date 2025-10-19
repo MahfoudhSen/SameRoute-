@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Matches Found</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #3a6d47;
+      --card: #0f1411;
+      --muted: #9fb3a5;
+      --text: #e8f3ec;
+      --accent: #2f9e44;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: var(--accent-2);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 30px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-2);
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 25px;
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: var(--accent-2);
+    }
+
+    .match-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .match-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .match-item:hover {
+      background: rgba(163, 230, 53, 0.1);
+      border-color: var(--accent-2);
+      transform: translateY(-2px);
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .match-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent-2);
+    }
+
+    .match-badge {
+      background: var(--accent);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .match-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .detail-icon {
+      font-size: 1.1rem;
+    }
+
+    .location-text {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+    }
+
+    .contact-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent-2);
+      color: var(--card);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .contact-btn:hover {
+      background: #bef264;
+      transform: scale(1.02);
+    }
+
+    .no-matches {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+
+    .no-matches-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .map-container {
+      height: 600px;
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top: 3px solid var(--accent-2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .back-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: rgba(255,255,255,0.1);
+      color: var(--text);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateX(-4px);
+    }
+
+    @media (max-width: 968px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      .match-details {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="landing.html" class="back-btn">← Back to Home</a>
+
+    <header>
+      <h1 id="pageTitle">🔍 Finding Matches...</h1>
+      <p class="subtitle" id="pageSubtitle">Please wait...</p>
+    </header>
+
+    <div class="stats" id="stats" style="display: none;">
+      <div class="stat-card">
+        <div class="stat-value" id="matchCount">0</div>
+        <div class="stat-label">Matches Found</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="bestMatch">--</div>
+        <div class="stat-label">Best Match</div>
+      </div>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Searching for compatible matches...</p>
+    </div>
+
+    <div class="main-content" id="content" style="display: none;">
+      <div class="card">
+        <h2 id="matchesTitle">Your Matches</h2>
+        <div class="match-list" id="matchList"></div>
+      </div>
+
+      <div class="card">
+        <h2>Map View</h2>
+        <div class="map-container">
+          <div id="map"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let map;
+    let markers = [];
+    let userType = '';
+    let userId = '';
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: 40.7128, lng: -74.0060 },
+        zoom: 11,
+        mapTypeControl: false,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#1d2c24" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#8ec3b9" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#1a3621" }] },
+          {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#2f4a3d" }]
+          },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#1e3a2e" }]
+          }
+        ]
+      });
+
+      fetchMatches();
+    }
+
+    async function fetchMatches() {
+      const urlParams = new URLSearchParams(window.location.search);
+      userType = urlParams.get('type');
+      userId = urlParams.get('id');
+
+      if (!userType || !userId) {
+        document.getElementById('loading').innerHTML = `
+          <div class="no-matches">
+            <div class="no-matches-icon">❌</div>
+            <h2>Invalid Request</h2>
+            <p>Missing user type or ID parameter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        const response = await fetch(`http://localhost:3000/api/matches?type=${userType}&id=${userId}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          displayMatches(data.matches);
+        } else {
+          throw new Error(data.error || 'Failed to fetch matches');
+        }
+      } catch (error) {
+        document.getElementById('loading').innerHTML = `
+          <div class="no-matches">
+            <div class="no-matches-icon">⚠️</div>
+            <h2>Connection Error</h2>
+            <p>Failed to connect to server. Make sure the backend is running on port 5000.</p>
+            <p style="margin-top: 10px; color: var(--muted); font-size: 0.9rem;">${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function displayMatches(matches) {
+      document.getElementById('loading').style.display = 'none';
+
+      const matchCount = matches.length;
+      const entityType = userType === 'driver' ? 'riders' : 'drivers';
+
+      document.getElementById('pageTitle').textContent = matchCount > 0
+        ? `✅ ${matchCount} Match${matchCount !== 1 ? 'es' : ''} Found!`
+        : `😔 No Matches Found`;
+
+      document.getElementById('pageSubtitle').textContent = matchCount > 0
+        ? `We found ${matchCount} compatible ${entityType} for your trip`
+        : `No compatible ${entityType} found at this time. Try adjusting your route or check back later.`;
+
+      if (matchCount > 0) {
+        document.getElementById('stats').style.display = 'flex';
+        document.getElementById('content').style.display = 'grid';
+
+        document.getElementById('matchCount').textContent = matchCount;
+        document.getElementById('bestMatch').textContent = matches[0].totalDetour + ' km';
+
+        const matchList = document.getElementById('matchList');
+        matchList.innerHTML = '';
+
+        matches.forEach((match, index) => {
+          const entity = userType === 'driver' ? match.rider : match.driver;
+          const matchItem = createMatchCard(entity, match, index + 1);
+          matchList.appendChild(matchItem);
+        });
+
+        // Display on map
+        displayOnMap(matches);
+      } else {
+        document.getElementById('content').innerHTML = `
+          <div class="no-matches" style="grid-column: 1 / -1;">
+            <div class="no-matches-icon">🔍</div>
+            <h2>No Matches Yet</h2>
+            <p>We couldn't find any compatible ${entityType} for your trip right now.</p>
+            <p style="margin-top: 15px; color: var(--muted);">
+              ${userType === 'driver' ? 'Try increasing your maximum detour distance.' : 'Check back soon as more drivers register!'}
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    function createMatchCard(entity, match, rank) {
+      const div = document.createElement('div');
+      div.className = 'match-item';
+
+      const matchPercentage = match.matchPercentage || 100;
+
+      div.innerHTML = `
+        <div class="match-header">
+          <div class="match-name">${rank}. ${entity.name}</div>
+          <div class="match-badge">${matchPercentage}% Match</div>
+        </div>
+
+        <div class="match-details">
+          <div class="detail-item">
+            <span class="detail-icon">📍</span>
+            <span>Pickup: ${match.pickupDistance} km away</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">🎯</span>
+            <span>Drop-off: ${match.dropoffDistance} km away</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">🛣️</span>
+            <span>Total detour: ${match.totalDetour} km</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-icon">📞</span>
+            <span>${entity.phone}</span>
+          </div>
+        </div>
+
+        <div class="location-text">
+          <strong>From:</strong> ${entity.currentLocation.address}<br>
+          <strong>To:</strong> ${entity.destination.address}
+        </div>
+
+        <button class="contact-btn" onclick="contactPerson('${entity.phone}', '${entity.name}')">
+          📞 Contact ${entity.name}
+        </button>
+      `;
+
+      return div;
+    }
+
+    function displayOnMap(matches) {
+      // Clear existing markers
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+
+      const bounds = new google.maps.LatLngBounds();
+
+      matches.forEach((match, index) => {
+        const entity = userType === 'driver' ? match.rider : match.driver;
+
+        // Current location marker
+        const currentMarker = new google.maps.Marker({
+          position: {
+            lat: entity.currentLocation.lat,
+            lng: entity.currentLocation.lng
+          },
+          map: map,
+          title: `${entity.name} - Start`,
+          label: {
+            text: (index + 1).toString(),
+            color: '#0f1411',
+            fontWeight: 'bold'
+          },
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 15,
+            fillColor: '#a3e635',
+            fillOpacity: 1,
+            strokeColor: '#fff',
+            strokeWeight: 2
+          }
+        });
+
+        // Destination marker
+        const destMarker = new google.maps.Marker({
+          position: {
+            lat: entity.destination.lat,
+            lng: entity.destination.lng
+          },
+          map: map,
+          title: `${entity.name} - End`,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 12,
+            fillColor: '#2f9e44',
+            fillOpacity: 0.8,
+            strokeColor: '#fff',
+            strokeWeight: 2
+          }
+        });
+
+        // Info window
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="color: #0f1411; padding: 10px;">
+              <strong>${entity.name}</strong><br>
+              From: ${entity.currentLocation.address}<br>
+              To: ${entity.destination.address}<br>
+              Detour: ${match.totalDetour} km
+            </div>
+          `
+        });
+
+        currentMarker.addListener('click', () => {
+          infoWindow.open(map, currentMarker);
+        });
+
+        markers.push(currentMarker, destMarker);
+        bounds.extend(currentMarker.getPosition());
+        bounds.extend(destMarker.getPosition());
+      });
+
+      map.fitBounds(bounds);
+    }
+
+    function contactPerson(phone, name) {
+      const message = `Hi ${name}, I found your profile on GreenRoute and we have a matching route! Can we connect about ride sharing?`;
+      const encodedMessage = encodeURIComponent(message);
+
+      // Try to open WhatsApp first, fallback to regular phone
+      const whatsappUrl = `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodedMessage}`;
+      const phoneUrl = `tel:${phone}`;
+
+      if (confirm(`Contact ${name} via:\n\n✓ WhatsApp\n✗ Phone Call\n\nClick OK for WhatsApp, Cancel for Phone Call`)) {
+        window.open(whatsappUrl, '_blank');
+      } else {
+        window.location.href = phoneUrl;
+      }
+    }
+  </script>
+
+  <!-- Replace YOUR_GOOGLE_MAPS_API_KEY with your actual API key -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places&callback=initMap" async defer></script>
+</body>
+</html>

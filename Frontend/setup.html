@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Setup Google Maps API Key</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --card: #242424;
+      --text: #e8f3ec;
+      --accent: #2f9e44;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: var(--accent-2);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #9fb3a5;
+      margin-bottom: 40px;
+      font-size: 1.1rem;
+    }
+
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent-2);
+    }
+
+    .step-number {
+      background: var(--accent-2);
+      color: var(--bg);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-right: 15px;
+    }
+
+    .step-title {
+      font-size: 1.3rem;
+      color: var(--accent-2);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .step-content {
+      padding-left: 55px;
+    }
+
+    .code-box {
+      background: #000;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .copy-btn:hover {
+      background: #27823a;
+    }
+
+    .input-group {
+      margin: 20px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .btn:hover {
+      background: #27823a;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--accent-2);
+      color: var(--bg);
+    }
+
+    .btn-secondary:hover {
+      background: #bef264;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+
+    .alert-success {
+      background: rgba(47, 158, 68, 0.2);
+      border: 1px solid var(--accent);
+      color: var(--accent-2);
+    }
+
+    .alert-info {
+      background: rgba(59, 130, 246, 0.2);
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+    }
+
+    .link {
+      color: var(--accent-2);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .link:hover {
+      text-decoration: underline;
+    }
+
+    .highlight {
+      background: rgba(163, 230, 53, 0.2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent-2);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🗺️ Google Maps API Setup</h1>
+    <p class="subtitle">Follow these simple steps to get your maps working in 5 minutes!</p>
+
+    <div class="alert alert-info">
+      <strong>⚡ Quick Option:</strong> Don't want to setup Google Maps? Use the <a href="simple-test.html" class="link">simple test version</a> which works without an API key!
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Go to Google Cloud Console
+      </div>
+      <div class="step-content">
+        <p>Visit the Google Cloud Console and sign in with your Google account:</p>
+        <div class="code-box">
+          <button class="copy-btn" onclick="copyText('https://console.cloud.google.com/')">Copy</button>
+          https://console.cloud.google.com/
+        </div>
+        <a href="https://console.cloud.google.com/" target="_blank" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">
+          Open Google Cloud Console →
+        </a>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        Create a Project
+      </div>
+      <div class="step-content">
+        <ol style="padding-left: 20px;">
+          <li>Click the <span class="highlight">project dropdown</span> at the top</li>
+          <li>Click <span class="highlight">"NEW PROJECT"</span></li>
+          <li>Name it: <span class="highlight">"GreenRoute"</span> (or anything you like)</li>
+          <li>Click <span class="highlight">"CREATE"</span></li>
+          <li>Wait a few seconds for it to be created</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        Enable Required APIs
+      </div>
+      <div class="step-content">
+        <p>In the search bar at the top, search for and enable these 3 APIs:</p>
+        <ol style="padding-left: 20px; margin: 15px 0;">
+          <li><strong>Maps JavaScript API</strong> - Click "Enable"</li>
+          <li><strong>Places API</strong> - Click "Enable"</li>
+          <li><strong>Geocoding API</strong> - Click "Enable"</li>
+        </ol>
+        <p style="color: #9fb3a5; font-size: 0.9rem;">
+          💡 Tip: Search for each one separately, click on it, then click the blue "Enable" button
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">4</span>
+        Create API Key
+      </div>
+      <div class="step-content">
+        <ol style="padding-left: 20px;">
+          <li>In the left sidebar, click <span class="highlight">"Credentials"</span></li>
+          <li>Click <span class="highlight">"+ CREATE CREDENTIALS"</span> at the top</li>
+          <li>Select <span class="highlight">"API key"</span></li>
+          <li>A popup appears with your API key - <strong>COPY IT!</strong></li>
+        </ol>
+        <p style="margin-top: 15px; color: var(--accent-2);">
+          ⚠️ Your API key looks like: <code style="background: #000; padding: 2px 6px; border-radius: 4px;">AIzaSyD...</code>
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <div class="step-title">
+        <span class="step-number">5</span>
+        Enter Your API Key Below
+      </div>
+      <div class="step-content">
+        <div class="input-group">
+          <label for="apiKey">Paste your Google Maps API Key:</label>
+          <input
+            type="text"
+            id="apiKey"
+            placeholder="AIzaSy..."
+            oninput="checkApiKey()"
+          >
+        </div>
+        <button class="btn" onclick="saveApiKey()" id="saveBtn" disabled>
+          💾 Save API Key
+        </button>
+        <div id="result"></div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step" id="step6" style="display: none;">
+      <div class="step-title">
+        <span class="step-number">6</span>
+        Test the Live Map!
+      </div>
+      <div class="step-content">
+        <p style="margin-bottom: 15px;">Your API key has been saved! Now test the live matching system:</p>
+        <a href="live-matching.html" class="btn btn-secondary" style="display: inline-block; text-decoration: none;">
+          🚗 Open Live Matching →
+        </a>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="margin-top: 40px;">
+      <strong>💰 Pricing:</strong> Google Maps offers <strong>$200 in free credits per month</strong>. This is plenty for testing and development. You won't be charged unless you exceed this limit.
+    </div>
+  </div>
+
+  <script>
+    function checkApiKey() {
+      const apiKey = document.getElementById('apiKey').value;
+      const saveBtn = document.getElementById('saveBtn');
+
+      if (apiKey.length > 30 && apiKey.startsWith('AIza')) {
+        saveBtn.disabled = false;
+        saveBtn.style.opacity = '1';
+      } else {
+        saveBtn.disabled = true;
+        saveBtn.style.opacity = '0.5';
+      }
+    }
+
+    function saveApiKey() {
+      const apiKey = document.getElementById('apiKey').value;
+      const result = document.getElementById('result');
+
+      // Save to localStorage
+      localStorage.setItem('googleMapsApiKey', apiKey);
+
+      // Also update config.js
+      updateConfigFile(apiKey);
+
+      result.innerHTML = `
+        <div class="alert alert-success" style="margin-top: 20px;">
+          ✅ <strong>API Key Saved!</strong><br>
+          Your key has been saved and will be used in all map pages.
+        </div>
+      `;
+
+      // Show step 6
+      document.getElementById('step6').style.display = 'block';
+
+      // Scroll to bottom
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 300);
+    }
+
+    function updateConfigFile(apiKey) {
+      // This will update the config in memory
+      // For persistence, we'll use localStorage which the maps will check
+      console.log('API Key saved to localStorage:', apiKey.substring(0, 10) + '...');
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text);
+      event.target.textContent = 'Copied!';
+      setTimeout(() => {
+        event.target.textContent = 'Copy';
+      }, 2000);
+    }
+
+    // Check if API key already exists
+    window.onload = function() {
+      const savedKey = localStorage.getItem('googleMapsApiKey');
+      if (savedKey) {
+        document.getElementById('apiKey').value = savedKey;
+        document.getElementById('saveBtn').disabled = false;
+        document.getElementById('step6').style.display = 'block';
+        document.getElementById('result').innerHTML = `
+          <div class="alert alert-success" style="margin-top: 20px;">
+            ✅ <strong>API Key Already Saved!</strong><br>
+            You can go directly to the live matching page.
+          </div>
+        `;
+      }
+    };
+  </script>
+</body>
+</html>

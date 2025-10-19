@@ -1,0 +1,20 @@
+// Google Maps API Configuration
+// REPLACE 'YOUR_API_KEY_HERE' with your actual Google Maps API key
+
+const GOOGLE_MAPS_CONFIG = {
+  // Get your API key from: https://console.cloud.google.com/
+  // 1. Create a project
+  // 2. Enable: Maps JavaScript API, Places API, Geocoding API
+  // 3. Create credentials -> API Key
+  // 4. Copy the key and paste it below
+
+  apiKey: 'YOUR_API_KEY_HERE',
+
+  // Libraries needed for the app
+  libraries: ['places'],
+
+  // Build the full URL
+  getScriptUrl: function() {
+    return `https://maps.googleapis.com/maps/api/js?key=${this.apiKey}&libraries=${this.libraries.join(',')}&callback=initMap`;
+  }
+};

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Live Matching</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --card: #242424;
+      --text: #e8f3ec;
+      --accent: #2f9e44;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .control-panel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 380px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+      background: var(--card);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-2);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mode-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .mode-btn {
+      padding: 12px;
+      border: 2px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .mode-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .range-group {
+      margin-bottom: 20px;
+    }
+
+    .range-display {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .range-value {
+      background: var(--accent-2);
+      color: var(--bg);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 5px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent-2);
+      cursor: pointer;
+      border-radius: 50%;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 10px;
+    }
+
+    .btn:hover {
+      background: #27823a;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--accent-2);
+      color: var(--bg);
+    }
+
+    .btn-secondary:hover {
+      background: #bef264;
+    }
+
+    .info-box {
+      background: rgba(163, 230, 53, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 15px;
+      border-left: 3px solid var(--accent-2);
+    }
+
+    .status-box {
+      background: rgba(47, 158, 68, 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .live-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #ef4444;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .matches-list {
+      margin-top: 20px;
+    }
+
+    .match-item {
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 3px solid var(--accent-2);
+    }
+
+    .match-name {
+      font-weight: 600;
+      color: var(--accent-2);
+      margin-bottom: 5px;
+    }
+
+    .match-distance {
+      font-size: 0.85rem;
+      color: #9fb3a5;
+    }
+
+    .location-btn {
+      background: var(--accent-2);
+      color: var(--bg);
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-bottom: 15px;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .location-btn:hover {
+      background: #bef264;
+    }
+
+    @media (max-width: 768px) {
+      .control-panel {
+        width: calc(100% - 40px);
+        max-height: 50vh;
+      }
+    }
+
+    .legend {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-top: 15px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid white;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div class="control-panel">
+    <div class="logo">
+      🚗 GreenRoute Live
+    </div>
+
+    <div class="mode-selector">
+      <button class="mode-btn active" onclick="setMode('driver')">🚙 Driver</button>
+      <button class="mode-btn" onclick="setMode('rider')">🙋 Rider</button>
+    </div>
+
+    <div class="info-box">
+      <span class="live-indicator"></span>
+      <strong>Live Tracking Active</strong><br>
+      Your location updates in real-time like Uber/Lyft
+    </div>
+
+    <!-- Driver Form -->
+    <div id="driverForm" style="display: block;">
+      <div class="form-group">
+        <label>👤 Your Name</label>
+        <input type="text" id="driverName" placeholder="Enter your name" value="Alex Driver">
+      </div>
+
+      <div class="form-group">
+        <label>📞 Phone Number</label>
+        <input type="tel" id="driverPhone" placeholder="+1 (555) 123-4567" value="+1-555-1234">
+      </div>
+
+      <button class="location-btn" onclick="useMyLocation('driver')">
+        📍 Use My Current Location
+      </button>
+
+      <div class="form-group">
+        <label>📍 Or Click on Map to Set Location</label>
+        <input type="text" id="driverLocation" placeholder="Click on map..." readonly>
+      </div>
+
+      <div class="range-group">
+        <div class="range-display">
+          <label>🎯 Search Radius</label>
+          <span class="range-value" id="radiusValue">5 km</span>
+        </div>
+        <input type="range" id="driverRadius" min="0.5" max="50" value="5" step="0.5"
+               oninput="updateRadius(this.value)">
+        <div style="font-size: 0.8rem; color: #9fb3a5; margin-top: 5px;">
+          How far you're willing to go to pick up riders
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" onclick="startDriver()">
+        🚙 Start Driving & Find Riders
+      </button>
+    </div>
+
+    <!-- Rider Form -->
+    <div id="riderForm" style="display: none;">
+      <div class="form-group">
+        <label>👤 Your Name</label>
+        <input type="text" id="riderName" placeholder="Enter your name" value="Sam Rider">
+      </div>
+
+      <div class="form-group">
+        <label>📞 Phone Number</label>
+        <input type="tel" id="riderPhone" placeholder="+1 (555) 987-6543" value="+1-555-5678">
+      </div>
+
+      <button class="location-btn" onclick="useMyLocation('rider')">
+        📍 Use My Current Location
+      </button>
+
+      <div class="form-group">
+        <label>📍 Or Click on Map to Set Location</label>
+        <input type="text" id="riderLocation" placeholder="Click on map..." readonly>
+      </div>
+
+      <button class="btn" onclick="startRider()">
+        🙋 Request Ride & Find Drivers
+      </button>
+    </div>
+
+    <!-- Status Box -->
+    <div class="status-box" id="statusBox" style="display: none;">
+      <div id="statusContent"></div>
+    </div>
+
+    <!-- Matches -->
+    <div class="matches-list" id="matchesList"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-color" style="background: #a3e635;"></div>
+        <span>Your Location (Live)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3b82f6;"></div>
+        <span>Potential Matches</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: transparent; border: 2px dashed #a3e635;"></div>
+        <span>Your Search Area</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let map;
+    let userMarker;
+    let userCircle;
+    let geocoder;
+    let userMode = 'driver'; // 'driver' or 'rider'
+    let userId = null;
+    let userLocation = null;
+    let matchMarkers = [];
+    let updateInterval;
+
+    // Initialize map
+    function initMap() {
+      // Default to New York
+      const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+
+      map = new google.maps.Map(document.getElementById('map'), {
+        center: defaultLocation,
+        zoom: 13,
+        styles: [
+          { elementType: "geometry", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.stroke", stylers: [{ color: "#242f3e" }] },
+          { elementType: "labels.text.fill", stylers: [{ color: "#746855" }] },
+          {
+            featureType: "administrative.locality",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }]
+          },
+          {
+            featureType: "poi",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }]
+          },
+          {
+            featureType: "poi.park",
+            elementType: "geometry",
+            stylers: [{ color: "#263c3f" }]
+          },
+          {
+            featureType: "poi.park",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#6b9a76" }]
+          },
+          {
+            featureType: "road",
+            elementType: "geometry",
+            stylers: [{ color: "#38414e" }]
+          },
+          {
+            featureType: "road",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#212a37" }]
+          },
+          {
+            featureType: "road",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#9ca5b3" }]
+          },
+          {
+            featureType: "road.highway",
+            elementType: "geometry",
+            stylers: [{ color: "#746855" }]
+          },
+          {
+            featureType: "road.highway",
+            elementType: "geometry.stroke",
+            stylers: [{ color: "#1f2835" }]
+          },
+          {
+            featureType: "road.highway",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#f3d19c" }]
+          },
+          {
+            featureType: "transit",
+            elementType: "geometry",
+            stylers: [{ color: "#2f3948" }]
+          },
+          {
+            featureType: "transit.station",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#d59563" }]
+          },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [{ color: "#17263c" }]
+          },
+          {
+            featureType: "water",
+            elementType: "labels.text.fill",
+            stylers: [{ color: "#515c6d" }]
+          },
+          {
+            featureType: "water",
+            elementType: "labels.text.stroke",
+            stylers: [{ color: "#17263c" }]
+          }
+        ],
+        disableDefaultUI: false,
+        zoomControl: true,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true
+      });
+
+      geocoder = new google.maps.Geocoder();
+
+      // Click on map to set location
+      map.addListener('click', (e) => {
+        setLocation(e.latLng.lat(), e.latLng.lng());
+      });
+
+      // Try to get user's location automatically
+      useMyLocation(userMode);
+    }
+
+    function setMode(mode) {
+      userMode = mode;
+
+      // Update buttons
+      document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // Show/hide forms
+      document.getElementById('driverForm').style.display = mode === 'driver' ? 'block' : 'none';
+      document.getElementById('riderForm').style.display = mode === 'rider' ? 'block' : 'none';
+
+      // Clear existing markers
+      clearMatches();
+    }
+
+    function useMyLocation(mode) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            setLocation(lat, lng);
+            map.setCenter({ lat, lng });
+            map.setZoom(14);
+          },
+          (error) => {
+            alert('Unable to get your location. Please click on the map or allow location access.');
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by your browser. Please click on the map.');
+      }
+    }
+
+    function setLocation(lat, lng) {
+      userLocation = { lat, lng };
+
+      // Remove old marker
+      if (userMarker) {
+        userMarker.setMap(null);
+      }
+      if (userCircle) {
+        userCircle.setMap(null);
+      }
+
+      // Add new marker
+      userMarker = new google.maps.Marker({
+        position: { lat, lng },
+        map: map,
+        title: 'Your Location',
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: '#a3e635',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        },
+        animation: google.maps.Animation.DROP
+      });
+
+      // Add search radius circle for drivers
+      if (userMode === 'driver') {
+        const radiusKm = parseFloat(document.getElementById('driverRadius').value);
+        userCircle = new google.maps.Circle({
+          strokeColor: '#a3e635',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#a3e635',
+          fillOpacity: 0.15,
+          map: map,
+          center: { lat, lng },
+          radius: radiusKm * 1000 // Convert km to meters
+        });
+      }
+
+      // Get address
+      geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const address = results[0].formatted_address;
+          if (userMode === 'driver') {
+            document.getElementById('driverLocation').value = address;
+          } else {
+            document.getElementById('riderLocation').value = address;
+          }
+        }
+      });
+    }
+
+    function updateRadius(value) {
+      document.getElementById('radiusValue').textContent = value + ' km';
+
+      // Update circle
+      if (userCircle && userLocation) {
+        userCircle.setRadius(parseFloat(value) * 1000);
+      }
+    }
+
+    async function startDriver() {
+      if (!userLocation) {
+        alert('Please set your location first!');
+        return;
+      }
+
+      const name = document.getElementById('driverName').value;
+      const phone = document.getElementById('driverPhone').value;
+      const address = document.getElementById('driverLocation').value;
+      const radiusKm = parseFloat(document.getElementById('driverRadius').value);
+
+      if (!name || !phone) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      // Register driver
+      const response = await fetch('http://localhost:3000/api/live-driver', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          location: {
+            address,
+            lat: userLocation.lat,
+            lng: userLocation.lng
+          },
+          radiusKm
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        userId = data.driver.id;
+        showStatus(`🚙 You're live! Searching for riders within ${radiusKm}km...`);
+        startLiveTracking();
+      } else {
+        alert('Error: ' + data.error);
+      }
+    }
+
+    async function startRider() {
+      if (!userLocation) {
+        alert('Please set your location first!');
+        return;
+      }
+
+      const name = document.getElementById('riderName').value;
+      const phone = document.getElementById('riderPhone').value;
+      const address = document.getElementById('riderLocation').value;
+
+      if (!name || !phone) {
+        alert('Please fill in all fields!');
+        return;
+      }
+
+      // Register rider
+      const response = await fetch('http://localhost:3000/api/live-rider', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          location: {
+            address,
+            lat: userLocation.lat,
+            lng: userLocation.lng
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        userId = data.rider.id;
+        showStatus(`🙋 Looking for drivers nearby...`);
+        startLiveTracking();
+      } else {
+        alert('Error: ' + data.error);
+      }
+    }
+
+    function startLiveTracking() {
+      // Update location every 5 seconds (like Uber/Lyft)
+      updateInterval = setInterval(async () => {
+        if (!userId || !userLocation) return;
+
+        // Update user's location on server
+        await fetch(`http://localhost:3000/api/update-location`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: userId,
+            type: userMode,
+            lat: userLocation.lat,
+            lng: userLocation.lng
+          })
+        });
+
+        // Get matches
+        await findMatches();
+      }, 5000);
+
+      // Get initial matches
+      findMatches();
+    }
+
+    async function findMatches() {
+      if (!userId) return;
+
+      const radiusKm = userMode === 'driver'
+        ? parseFloat(document.getElementById('driverRadius').value)
+        : 50; // Riders see all drivers within 50km
+
+      const response = await fetch(
+        `http://localhost:3000/api/live-matches?type=${userMode}&id=${userId}&radius=${radiusKm}`
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        displayMatches(data.matches);
+      }
+    }
+
+    function displayMatches(matches) {
+      // Clear old markers
+      clearMatches();
+
+      const matchesList = document.getElementById('matchesList');
+
+      if (matches.length === 0) {
+        matchesList.innerHTML = '<div class="info-box">No matches nearby yet. Keep driving!</div>';
+        return;
+      }
+
+      matchesList.innerHTML = `<div style="font-weight: 600; margin-bottom: 10px;">
+        🎯 ${matches.length} Match${matches.length > 1 ? 'es' : ''} Found:
+      </div>`;
+
+      matches.forEach((match, index) => {
+        const entity = userMode === 'driver' ? match.rider : match.driver;
+
+        // Add marker on map
+        const marker = new google.maps.Marker({
+          position: { lat: entity.location.lat, lng: entity.location.lng },
+          map: map,
+          title: entity.name,
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: '#3b82f6',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 2
+          },
+          label: {
+            text: (index + 1).toString(),
+            color: '#ffffff',
+            fontWeight: 'bold'
+          }
+        });
+
+        // Add info window
+        const infoWindow = new google.maps.InfoWindow({
+          content: `
+            <div style="color: #1a1a1a; padding: 10px;">
+              <strong>${entity.name}</strong><br>
+              📞 ${entity.phone}<br>
+              📍 ${match.distance} km away
+            </div>
+          `
+        });
+
+        marker.addListener('click', () => {
+          infoWindow.open(map, marker);
+        });
+
+        matchMarkers.push(marker);
+
+        // Add to list
+        const matchDiv = document.createElement('div');
+        matchDiv.className = 'match-item';
+        matchDiv.innerHTML = `
+          <div class="match-name">${index + 1}. ${entity.name}</div>
+          <div class="match-distance">📍 ${match.distance} km away</div>
+          <div class="match-distance">📞 ${entity.phone}</div>
+        `;
+        matchDiv.onclick = () => {
+          map.setCenter({ lat: entity.location.lat, lng: entity.location.lng });
+          map.setZoom(15);
+          infoWindow.open(map, marker);
+        };
+        matchesList.appendChild(matchDiv);
+      });
+    }
+
+    function clearMatches() {
+      matchMarkers.forEach(marker => marker.setMap(null));
+      matchMarkers = [];
+    }
+
+    function showStatus(message) {
+      const statusBox = document.getElementById('statusBox');
+      const statusContent = document.getElementById('statusContent');
+      statusBox.style.display = 'block';
+      statusContent.innerHTML = message;
+    }
+
+    // Simulate location updates (like when user is moving)
+    setInterval(() => {
+      if (userId && userLocation && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const newLat = position.coords.latitude;
+            const newLng = position.coords.longitude;
+
+            // Only update if location changed significantly
+            const moved = Math.abs(newLat - userLocation.lat) > 0.0001 ||
+                         Math.abs(newLng - userLocation.lng) > 0.0001;
+
+            if (moved) {
+              setLocation(newLat, newLng);
+            }
+          }
+        );
+      }
+    }, 10000); // Check every 10 seconds
+  </script>
+
+  <script>
+    // Load Google Maps with API key from localStorage or show setup message
+    function loadGoogleMaps() {
+      const apiKey = localStorage.getItem('googleMapsApiKey');
+
+      if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+        // No API key found, show setup message
+        document.body.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #1a1a1a; color: #e8f3ec; font-family: Inter, sans-serif; text-align: center; padding: 20px;">
+            <div style="max-width: 600px;">
+              <h1 style="font-size: 2.5rem; color: #a3e635; margin-bottom: 20px;">🗺️ Setup Required</h1>
+              <p style="font-size: 1.2rem; margin-bottom: 30px; color: #9fb3a5;">
+                You need a Google Maps API key to use the live tracking feature.
+              </p>
+              <div style="background: #242424; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 30px; margin-bottom: 30px;">
+                <h2 style="color: #a3e635; margin-bottom: 15px;">Two Options:</h2>
+                <div style="margin-bottom: 20px;">
+                  <h3 style="color: #fff; margin-bottom: 10px;">Option 1: Quick Test (No Setup)</h3>
+                  <p style="color: #9fb3a5; margin-bottom: 15px;">Use the simple test version that works immediately</p>
+                  <a href="simple-test.html" style="display: inline-block; background: #a3e635; color: #1a1a1a; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    Use Simple Test →
+                  </a>
+                </div>
+                <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+                  <h3 style="color: #fff; margin-bottom: 10px;">Option 2: Get Google Maps API Key</h3>
+                  <p style="color: #9fb3a5; margin-bottom: 15px;">Takes 5 minutes, enables full map features</p>
+                  <a href="setup.html" style="display: inline-block; background: #2f9e44; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                    Setup API Key →
+                  </a>
+                </div>
+              </div>
+              <p style="font-size: 0.9rem; color: #9fb3a5;">
+                Google Maps API is free for testing ($200/month credit)
+              </p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Load Google Maps with the API key
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = function() {
+        alert('Failed to load Google Maps. Please check your API key in setup.html');
+        window.location.href = 'setup.html';
+      };
+      document.head.appendChild(script);
+    }
+
+    // Call on page load
+    loadGoogleMaps();
+  </script>
+</body>
+</html>

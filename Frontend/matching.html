@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Ride Matching</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #3a6d47;
+      --card: #0f1411;
+      --muted: #9fb3a5;
+      --text: #e8f3ec;
+      --accent: #2f9e44;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: var(--accent-2);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    .option-card {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 30px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .option-card:hover {
+      border-color: var(--accent-2);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .option-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .option-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-2);
+      margin-bottom: 12px;
+    }
+
+    .option-description {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .info-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px;
+      margin-bottom: 20px;
+    }
+
+    .info-title {
+      font-size: 1.3rem;
+      color: var(--accent-2);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .info-list li {
+      padding: 10px 0;
+      padding-left: 30px;
+      position: relative;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .info-list li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--accent-2);
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .options {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚗 GreenRoute Matching System</h1>
+      <p class="subtitle">Connect with riders or drivers on your route</p>
+    </header>
+
+    <div class="options">
+      <a href="rider.html" class="option-card">
+        <div class="option-icon">🙋</div>
+        <div class="option-title">I Need a Ride</div>
+        <div class="option-description">
+          Looking for a driver heading your way? Register as a rider and find compatible drivers.
+        </div>
+      </a>
+
+      <a href="driver.html" class="option-card">
+        <div class="option-icon">🚙</div>
+        <div class="option-title">I Can Offer a Ride</div>
+        <div class="option-description">
+          Have extra seats in your car? Register as a driver and help others while sharing costs.
+        </div>
+      </a>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">
+        <span>ℹ️</span>
+        <span>How It Works</span>
+      </div>
+      <ul class="info-list">
+        <li>Choose your role (Rider or Driver) and click the card above</li>
+        <li>Enter your name and phone number</li>
+        <li>Select your current location and destination on the map</li>
+        <li>For drivers: Set maximum detour distance you're willing to take</li>
+        <li>Our algorithm finds compatible matches based on proximity</li>
+        <li>Contact matched users directly via phone or WhatsApp</li>
+        <li>All data is stored locally in text files for demo purposes</li>
+      </ul>
+    </div>
+
+    <div class="info-section">
+      <div class="info-title">
+        <span>🗺️</span>
+        <span>Google Maps Integration</span>
+      </div>
+      <ul class="info-list">
+        <li>Interactive map to select locations visually</li>
+        <li>Search for places using the search box</li>
+        <li>Click on the map to set precise pickup and drop-off points</li>
+        <li>Route visualization between locations</li>
+        <li>Distance calculations using real coordinates</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

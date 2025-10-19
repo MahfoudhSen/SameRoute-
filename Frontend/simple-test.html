@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenRoute - Simple Test (No API Key Needed)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #3a6d47;
+      --card: #0f1411;
+      --muted: #9fb3a5;
+      --text: #e8f3ec;
+      --accent: #2f9e44;
+      --accent-2: #a3e635;
+      --border: rgba(255,255,255,.08);
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: var(--accent-2);
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 25px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: var(--accent-2);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: #27823a;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: var(--accent-2);
+      color: var(--card);
+    }
+
+    .btn-secondary:hover {
+      background: #bef264;
+    }
+
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .alert-success {
+      background: rgba(47, 158, 68, 0.2);
+      border: 1px solid var(--accent);
+      color: var(--accent-2);
+    }
+
+    .alert-error {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid #dc2626;
+      color: #fca5a5;
+    }
+
+    .match-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 15px;
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+
+    .match-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--accent-2);
+    }
+
+    .match-badge {
+      background: var(--accent);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    .info-box {
+      background: rgba(163, 230, 53, 0.1);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border-left: 3px solid var(--accent-2);
+    }
+
+    .location-select {
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚗 GreenRoute - Simple Test Mode</h1>
+      <p class="subtitle">Test the matching system with preset locations (No Google Maps API needed)</p>
+    </header>
+
+    <div id="alert-container"></div>
+
+    <!-- Driver Registration -->
+    <div class="section">
+      <h2>👤 Register as Driver</h2>
+      <form id="driverForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="driverName">Name *</label>
+            <input type="text" id="driverName" value="Alice Driver" required>
+          </div>
+          <div class="form-group">
+            <label for="driverPhone">Phone *</label>
+            <input type="tel" id="driverPhone" value="+1-555-1234" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="driverStart">Current Location *</label>
+          <select id="driverStart" class="location-select" required>
+            <option value='{"address":"Empire State Building, NY","lat":40.7484,"lng":-73.9857}'>Empire State Building, NY</option>
+            <option value='{"address":"Times Square, NY","lat":40.7580,"lng":-73.9855}'>Times Square, NY</option>
+            <option value='{"address":"Brooklyn Bridge, NY","lat":40.7061,"lng":-73.9969}'>Brooklyn Bridge, NY</option>
+            <option value='{"address":"Grand Central Terminal, NY","lat":40.7527,"lng":-73.9772}'>Grand Central Terminal, NY</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="driverEnd">Destination *</label>
+          <select id="driverEnd" class="location-select" required>
+            <option value='{"address":"Central Park, NY","lat":40.7829,"lng":-73.9654}'>Central Park, NY</option>
+            <option value='{"address":"Columbus Circle, NY","lat":40.7681,"lng":-73.9819}'>Columbus Circle, NY</option>
+            <option value='{"address":"Lincoln Center, NY","lat":40.7723,"lng":-73.9836}'>Lincoln Center, NY</option>
+            <option value='{"address":"Yankee Stadium, NY","lat":40.8296,"lng":-73.9262}'>Yankee Stadium, NY</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="driverDetour">Maximum Detour (km): <span id="detourValue">10</span></label>
+          <input type="range" id="driverDetour" min="1" max="50" value="10" step="0.5" oninput="document.getElementById('detourValue').textContent = this.value">
+        </div>
+
+        <button type="submit" class="btn btn-secondary">Register Driver & Find Riders</button>
+      </form>
+    </div>
+
+    <!-- Rider Registration -->
+    <div class="section">
+      <h2>🙋 Register as Rider</h2>
+      <form id="riderForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="riderName">Name *</label>
+            <input type="text" id="riderName" value="Bob Rider" required>
+          </div>
+          <div class="form-group">
+            <label for="riderPhone">Phone *</label>
+            <input type="tel" id="riderPhone" value="+1-555-5678" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="riderStart">Current Location *</label>
+          <select id="riderStart" class="location-select" required>
+            <option value='{"address":"Times Square, NY","lat":40.7580,"lng":-73.9855}'>Times Square, NY</option>
+            <option value='{"address":"Empire State Building, NY","lat":40.7484,"lng":-73.9857}'>Empire State Building, NY</option>
+            <option value='{"address":"Brooklyn Bridge, NY","lat":40.7061,"lng":-73.9969}'>Brooklyn Bridge, NY</option>
+            <option value='{"address":"Grand Central Terminal, NY","lat":40.7527,"lng":-73.9772}'>Grand Central Terminal, NY</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="riderEnd">Destination *</label>
+          <select id="riderEnd" class="location-select" required>
+            <option value='{"address":"Columbus Circle, NY","lat":40.7681,"lng":-73.9819}'>Columbus Circle, NY</option>
+            <option value='{"address":"Central Park, NY","lat":40.7829,"lng":-73.9654}'>Central Park, NY</option>
+            <option value='{"address":"Lincoln Center, NY","lat":40.7723,"lng":-73.9836}'>Lincoln Center, NY</option>
+            <option value='{"address":"Yankee Stadium, NY","lat":40.8296,"lng":-73.9262}'>Yankee Stadium, NY</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn">Register Rider & Find Drivers</button>
+      </form>
+    </div>
+
+    <!-- Results -->
+    <div class="section" id="resultsSection" style="display: none;">
+      <h2 id="resultsTitle">Results</h2>
+      <div id="resultsContent"></div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="info-box">
+      <strong>📋 Instructions:</strong><br>
+      1. Register a driver (default: Empire State → Central Park, 10km detour)<br>
+      2. Register a rider (default: Times Square → Columbus Circle)<br>
+      3. These locations should match! Driver's route is very close to rider's route.<br>
+      4. Try changing locations and detour distances to test different scenarios.<br>
+      5. Check the results section below to see matches.
+    </div>
+  </div>
+
+  <script>
+    let driverId = null;
+    let riderId = null;
+
+    function showAlert(message, type = 'success') {
+      const alertContainer = document.getElementById('alert-container');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = message;
+      alertContainer.appendChild(alert);
+      setTimeout(() => alert.remove(), 5000);
+    }
+
+    // Driver registration
+    document.getElementById('driverForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const currentLocation = JSON.parse(document.getElementById('driverStart').value);
+      const destination = JSON.parse(document.getElementById('driverEnd').value);
+
+      const formData = {
+        name: document.getElementById('driverName').value,
+        phone: document.getElementById('driverPhone').value,
+        currentLocation,
+        destination,
+        maxDetourKm: parseFloat(document.getElementById('driverDetour').value)
+      };
+
+      try {
+        const response = await fetch('http://localhost:3000/api/drivers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          driverId = data.driver.id;
+          showAlert(`✅ Driver registered! ID: ${driverId}`, 'success');
+          await findMatches('driver', driverId);
+        } else {
+          showAlert('❌ ' + data.error, 'error');
+        }
+      } catch (error) {
+        showAlert('❌ Failed to connect to server. Make sure backend is running on port 3000!', 'error');
+      }
+    });
+
+    // Rider registration
+    document.getElementById('riderForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const currentLocation = JSON.parse(document.getElementById('riderStart').value);
+      const destination = JSON.parse(document.getElementById('riderEnd').value);
+
+      const formData = {
+        name: document.getElementById('riderName').value,
+        phone: document.getElementById('riderPhone').value,
+        currentLocation,
+        destination
+      };
+
+      try {
+        const response = await fetch('http://localhost:3000/api/riders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          riderId = data.rider.id;
+          showAlert(`✅ Rider registered! ID: ${riderId}`, 'success');
+          await findMatches('rider', riderId);
+        } else {
+          showAlert('❌ ' + data.error, 'error');
+        }
+      } catch (error) {
+        showAlert('❌ Failed to connect to server. Make sure backend is running on port 3000!', 'error');
+      }
+    });
+
+    async function findMatches(type, id) {
+      try {
+        const response = await fetch(`http://localhost:3000/api/matches?type=${type}&id=${id}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          displayMatches(data.matches, type);
+        } else {
+          showAlert('❌ Failed to find matches: ' + data.error, 'error');
+        }
+      } catch (error) {
+        showAlert('❌ Failed to find matches', 'error');
+      }
+    }
+
+    function displayMatches(matches, userType) {
+      const resultsSection = document.getElementById('resultsSection');
+      const resultsTitle = document.getElementById('resultsTitle');
+      const resultsContent = document.getElementById('resultsContent');
+
+      resultsSection.style.display = 'block';
+
+      if (matches.length === 0) {
+        resultsTitle.textContent = `😔 No ${userType === 'driver' ? 'Riders' : 'Drivers'} Found`;
+        resultsContent.innerHTML = `
+          <div class="info-box">
+            <strong>No matches found.</strong><br>
+            ${userType === 'driver'
+              ? 'Try increasing your maximum detour distance or wait for more riders to register.'
+              : 'No drivers available on a similar route. Try registering as a driver or wait for others to join!'}
+          </div>
+        `;
+        return;
+      }
+
+      resultsTitle.textContent = `🎉 Found ${matches.length} Match${matches.length > 1 ? 'es' : ''}!`;
+
+      resultsContent.innerHTML = matches.map((match, index) => {
+        const entity = userType === 'driver' ? match.rider : match.driver;
+        return `
+          <div class="match-item">
+            <div class="match-header">
+              <div class="match-name">${index + 1}. ${entity.name}</div>
+              <div class="match-badge">${match.matchPercentage}% Match</div>
+            </div>
+            <div style="margin-bottom: 10px; color: var(--muted);">
+              <strong>📞 Phone:</strong> ${entity.phone}<br>
+              <strong>📍 From:</strong> ${entity.currentLocation.address}<br>
+              <strong>🎯 To:</strong> ${entity.destination.address}
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 6px;">
+              <div><strong>Pickup:</strong> ${match.pickupDistance} km</div>
+              <div><strong>Drop-off:</strong> ${match.dropoffDistance} km</div>
+              <div><strong>Total:</strong> ${match.totalDetour} km</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+</body>
+</html>
