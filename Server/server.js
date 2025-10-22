@@ -60,6 +60,82 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// Calculate if rider is along the driver's route
+function isAlongRoute(driverOrigin, driverDest, riderPickup, riderDest, maxRadiusKm = 10) {
+  // Calculate pickup distance from driver's current location
+  const pickupDistance = calculateDistance(
+    driverOrigin.lat, driverOrigin.lng,
+    riderPickup.lat, riderPickup.lng
+  );
+
+  // First check: Is pickup within radius?
+  if (pickupDistance > maxRadiusKm) {
+    return {
+      isMatch: false,
+      detourKm: pickupDistance,
+      detourPercent: 0,
+      directDistance: 0,
+      routeWithRider: 0,
+      reason: 'Pickup too far'
+    };
+  }
+
+  // Calculate direct distance from driver origin to destination
+  const directDistance = calculateDistance(
+    driverOrigin.lat, driverOrigin.lng,
+    driverDest.lat, driverDest.lng
+  );
+
+  // Check if destinations are similar (within 10km)
+  const destDistance = calculateDistance(
+    driverDest.lat, driverDest.lng,
+    riderDest.lat, riderDest.lng
+  );
+
+  // If destinations are close AND pickup is in radius - perfect match!
+  if (destDistance <= 10) {
+    return {
+      isMatch: true,
+      detourKm: pickupDistance,
+      detourPercent: 0,
+      directDistance: directDistance,
+      routeWithRider: directDistance + pickupDistance,
+      sameDestination: true,
+      pickupDistance: pickupDistance
+    };
+  }
+
+  // Calculate route with rider: origin -> pickup -> rider dest -> driver dest
+  const toPickup = pickupDistance;
+
+  const pickupToRiderDest = calculateDistance(
+    riderPickup.lat, riderPickup.lng,
+    riderDest.lat, riderDest.lng
+  );
+
+  const riderDestToDriverDest = calculateDistance(
+    riderDest.lat, riderDest.lng,
+    driverDest.lat, driverDest.lng
+  );
+
+  const routeWithRider = toPickup + pickupToRiderDest + riderDestToDriverDest;
+
+  // Calculate detour
+  const detour = routeWithRider - directDistance;
+  const detourPercent = (detour / directDistance) * 100;
+
+  // Allow reasonable detour: within 15km extra or 50% increase
+  return {
+    isMatch: detour <= 15 && detourPercent <= 50,
+    detourKm: detour,
+    detourPercent: detourPercent,
+    directDistance: directDistance,
+    routeWithRider: routeWithRider,
+    sameDestination: false,
+    pickupDistance: pickupDistance
+  };
+}
+
 // Read data from file
 async function readData(filePath) {
   try {
@@ -473,9 +549,36 @@ app.get('/api/live-matches', (req, res) => {
         return res.status(404).json({ error: 'Driver not found' });
       }
 
-      // Find riders within radius
+      // Find riders along driver's route
       matches = Array.from(liveRiders.values()).map(rider => {
-        const distance = calculateDistance(
+        // Check if rider has destination info
+        if (!rider.destination || !driver.destination) {
+          // Fallback to distance-based matching if no destination
+          const distance = calculateDistance(
+            driver.location.lat,
+            driver.location.lng,
+            rider.location.lat,
+            rider.location.lng
+          );
+          return {
+            rider,
+            distance: distance.toFixed(2),
+            isMatch: distance <= radiusKm,
+            detourKm: 0,
+            detourPercent: 0
+          };
+        }
+
+        // Check if rider is along the route
+        const routeCheck = isAlongRoute(
+          driver.location,  // driver origin (current location)
+          driver.destination,  // driver destination
+          rider.location,  // rider pickup
+          rider.destination,  // rider destination
+          radiusKm
+        );
+
+        const pickupDistance = calculateDistance(
           driver.location.lat,
           driver.location.lng,
           rider.location.lat,
@@ -484,10 +587,12 @@ app.get('/api/live-matches', (req, res) => {
 
         return {
           rider,
-          distance: distance.toFixed(2),
-          isMatch: distance <= radiusKm
+          distance: pickupDistance.toFixed(2),
+          detourKm: routeCheck.detourKm.toFixed(2),
+          detourPercent: routeCheck.detourPercent.toFixed(1),
+          isMatch: routeCheck.isMatch
         };
-      }).filter(m => m.isMatch).sort((a, b) => a.distance - b.distance);
+      }).filter(m => m.isMatch).sort((a, b) => parseFloat(a.detourKm) - parseFloat(b.detourKm));
 
     } else if (type === 'rider') {
       const rider = liveRiders.get(id);
